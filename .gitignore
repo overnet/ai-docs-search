@@ -9,9 +9,21 @@ venv/
 env/
 .env/
 
+# Python package build artifacts
+*.egg-info/
+dist/
+build/
+*.egg
+
 # Database files
 *.db
+data/db/
 
 # IDE settings
 .vscode/
-.idea/ 
+.idea/
+
+# Temporary files
+*.log
+*.swp
+.DS_Store .asoundrc
