@@ -4,6 +4,7 @@ import nltk
 import xml.etree.ElementTree as ET
 from nltk.tokenize import sent_tokenize
 from PyPDF2 import PdfReader
+from config import Config
 
 # Download required NLTK data if not already present
 required_nltk_data = ['punkt', 'punkt_tab']
@@ -155,27 +156,28 @@ class DocumentParser:
         for root, _, files in os.walk(folder_path):
             for file_name in files:
                 file_path = os.path.join(root, file_name)
+                file_ext = os.path.splitext(file_name)[1].lower()
                 
-                if file_name.endswith(".txt"):
-                    print(f"Processing TXT file: {file_path}")
-                    content = self.parse_txt_file(file_path)
-                elif file_name.endswith(".csv"):
-                    print(f"Processing CSV file: {file_path}")
-                    content = self.parse_csv_file(file_path)
-                elif file_name.endswith(".xml"):
-                    print(f"Processing XML file: {file_path}")
-                    content = self.parse_xml_file(file_path)
-                elif file_name.endswith(".pdf"):
-                    print(f"Processing PDF file: {file_path}")
-                    content = self.parse_pdf_file(file_path)
-                else:
+                if file_ext not in Config.SUPPORTED_EXTENSIONS:
                     continue
+                
+                print(f"Processing {file_ext[1:].upper()} file: {file_path}")
+                content = None
+                
+                if file_ext == '.txt':
+                    content = self.parse_txt_file(file_path)
+                elif file_ext == '.csv':
+                    content = self.parse_csv_file(file_path)
+                elif file_ext == '.xml':
+                    content = self.parse_xml_file(file_path)
+                elif file_ext == '.pdf':
+                    content = self.parse_pdf_file(file_path)
 
                 if content:
                     sentences = self.get_sentences(content)
                     for sentence in sentences:
                         # Filter out very short or empty sentences that might be noise
-                        if len(sentence.strip()) > 10:
+                        if len(sentence.strip()) > Config.MIN_SENTENCE_LENGTH:
                             parsed_data.append((file_path, sentence.strip()))
         
         return parsed_data

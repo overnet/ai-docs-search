@@ -2,14 +2,15 @@ import sqlite3
 import os
 import json  # For handling BLOB data if not using sqlite-vss correctly, but better to rely on sqlite-vss VECTOR type
 import numpy as np  # For converting list to numpy array if needed for sqlite-vss
+from config import Config
 
 
 class VectorDB:
     def __init__(
         self,
-        db_path="local_vector_db.db",
+        db_path=Config.DB_FILE,
         embedding_dim=384,
-        sqlite_vss_extension_path=None,
+        sqlite_vss_extension_path=Config.VSS_EXTENSION_PATH,
     ):
         self.db_path = db_path
         self.embedding_dim = embedding_dim
@@ -135,7 +136,12 @@ class VectorDB:
         except sqlite3.Error as e:
             print(f"Error clearing database: {e}")
 
-    def search_similar_sentences(self, query_embedding, limit=10, distance_threshold=0.8):
+    def search_similar_sentences(
+        self, 
+        query_embedding, 
+        limit=Config.DEFAULT_SEARCH_LIMIT, 
+        distance_threshold=Config.DISTANCE_THRESHOLD
+    ):
         """
         Searches for sentences most similar to the query embedding.
         Uses sqlite-vss if loaded, otherwise falls back to basic Python logic (less efficient).

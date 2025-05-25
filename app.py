@@ -4,13 +4,7 @@ from document_parser import DocumentParser
 from embedding_model import EmbeddingModel
 from vector_db import VectorDB
 from tqdm import tqdm
-import argparse
-
-# --- Configuration ---
-DB_FILE = os.path.join("data", "db", "document_embeddings.db")
-VSS_EXTENSION_PATH = os.getenv("VSS_EXTENSION_PATH")
-HOST_ROOT = os.getenv("HOST_ROOT", "/host")  # Root of host filesystem in container
-# --- End Configuration ---
+from config import Config
 
 def convert_host_path_to_container(host_path):
     """Convert a host path to its equivalent in the container."""
@@ -19,16 +13,16 @@ def convert_host_path_to_container(host_path):
         host_path = os.path.abspath(host_path)
     
     # If it's already an absolute path in the container, return as is
-    if host_path.startswith(HOST_ROOT):
+    if host_path.startswith(Config.HOST_ROOT):
         return host_path
     
     # Convert host absolute path to container path
-    return os.path.join(HOST_ROOT, host_path.lstrip('/'))
+    return os.path.join(Config.HOST_ROOT, host_path.lstrip('/'))
 
 def convert_container_path_to_host(container_path):
     """Convert a container path back to host path for display."""
-    if container_path.startswith(HOST_ROOT):
-        return '/' + container_path[len(HOST_ROOT):].lstrip('/')
+    if container_path.startswith(Config.HOST_ROOT):
+        return '/' + container_path[len(Config.HOST_ROOT):].lstrip('/')
     return container_path
 
 def initialize_database(db_manager, parser, embedder, folder_path):
@@ -71,15 +65,15 @@ def main():
     print("--- AI Document Search Application ---")
 
     # Create necessary directories
-    os.makedirs(os.path.dirname(DB_FILE), exist_ok=True)
+    Config.ensure_directories()
 
     # Initialize components
     doc_parser = DocumentParser()
-    embedder = EmbeddingModel()
+    embedder = EmbeddingModel(model_name=Config.MODEL_NAME)
     db_manager = VectorDB(
-        db_path=DB_FILE,
+        db_path=Config.DB_FILE,
         embedding_dim=embedder.get_embedding_dimension(),
-        sqlite_vss_extension_path=VSS_EXTENSION_PATH,
+        sqlite_vss_extension_path=Config.VSS_EXTENSION_PATH,
     )
 
     # Get folder path from user input
@@ -127,7 +121,9 @@ def main():
             continue
 
         search_results = db_manager.search_similar_sentences(
-            query_embedding, limit=5
+            query_embedding, 
+            limit=Config.DEFAULT_SEARCH_LIMIT,
+            distance_threshold=Config.DISTANCE_THRESHOLD
         )
 
         if not search_results:
@@ -136,8 +132,7 @@ def main():
             print("\n--- Top Relevant Files ---")
             relevant_files = set()
             for res in search_results:
-                # Display host paths to the user
-                relevant_files.add(res["file_path"])  # Already in host path format
+                relevant_files.add(res["file_path"])
 
             for f_path in relevant_files:
                 print(f"- {f_path}")
