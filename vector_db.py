@@ -135,7 +135,7 @@ class VectorDB:
         except sqlite3.Error as e:
             print(f"Error clearing database: {e}")
 
-    def search_similar_sentences(self, query_embedding, limit=10, distance_threshold=0.5):
+    def search_similar_sentences(self, query_embedding, limit=10, distance_threshold=0.8):
         """
         Searches for sentences most similar to the query embedding.
         Uses sqlite-vss if loaded, otherwise falls back to basic Python logic (less efficient).
@@ -195,7 +195,7 @@ class VectorDB:
                 })
         return final_results
 
-    def _fallback_python_search(self, query_embedding, limit, distance_threshold=0.5):
+    def _fallback_python_search(self, query_embedding, limit, distance_threshold=0.8):
         """
         Fallback search using Python's numpy for similarity calculation.
         This is much slower for large datasets.

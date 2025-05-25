@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Root xmlns="http://www.adventure-works.com">
+  <Customers>
+    <Customer CustomerID="ALPHB">
+      <CompanyName>Alpha Bravo Grocers</CompanyName>
+      <ContactName>Alice Wonderland</ContactName>
+      <ContactTitle>Purchasing Agent</ContactTitle>
+      <Phone>(123) 456-7890</Phone>
+      <FullAddress>
+        <Address>123 Maple Street</Address>
+        <City>Springfield</City>
+        <Region>IL</Region>
+        <PostalCode>62704</PostalCode>
+        <Country>USA</Country>
+      </FullAddress>
+    </Customer>
+    <Customer CustomerID="BETAC">
+      <CompanyName>Beta Cargo Solutions</CompanyName>
+      <ContactName>Bob Thebuilder</ContactName>
+      <ContactTitle>Logistics Coordinator</ContactTitle>
+      <Phone>(987) 654-3210</Phone>
+      <Fax>(987) 654-3211</Fax>
+      <FullAddress>
+        <Address>45 Warehouse Road</Address>
+        <City>Portsmouth</City>
+        <Region>NH</Region>
+        <PostalCode>03801</PostalCode>
+        <Country>USA</Country>
+      </FullAddress>
+    </Customer>
+    <Customer CustomerID="GAMMD">
+      <CompanyName>Gamma Distribution Ltd.</CompanyName>
+      <ContactName>Charlie Chaplin</ContactName>
+      <ContactTitle>Sales Director</ContactTitle>
+      <Phone>(333) 222-1111</Phone>
+      <Fax>(333) 222-1112</Fax>
+      <FullAddress>
+        <Address>789 High Street</Address>
+        <City>London</City>
+        <Region>ENG</Region>
+        <PostalCode>SW1A 0AA</PostalCode>
+        <Country>UK</Country>
+      </FullAddress>
+    </Customer>
+    <Customer CustomerID="DELTE">
+      <CompanyName>Delta Tech Innovations</CompanyName>
+      <ContactName>Diana Prince</ContactName>
+      <ContactTitle>CEO</ContactTitle>
+      <Phone>(555) 123-4567</Phone>
+      <FullAddress>
+        <Address>101 Innovation Drive</Address>
+        <City>Silicon Valley</City>
+        <Region>CA</Region>
+        <PostalCode>95054</PostalCode>
+        <Country>USA</Country>
+      </FullAddress>
+    </Customer>
+  </Customers>
+  <Orders>
+    <Order>
+      <CustomerID>ALPHB</CustomerID>
+      <EmployeeID>7</EmployeeID>
+      <OrderDate>2023-01-15T10:00:00</OrderDate>
+      <RequiredDate>2023-01-29T10:00:00</RequiredDate>
+      <ShipInfo ShippedDate="2023-01-18T10:00:00">
+        <ShipVia>1</ShipVia>
+        <Freight>15.20</Freight>
+        <ShipName>Alpha Bravo Grocers</ShipName>
+        <ShipAddress>123 Maple Street</ShipAddress>
+        <ShipCity>Springfield</ShipCity>
+        <ShipRegion>IL</ShipRegion>
+        <ShipPostalCode>62704</ShipPostalCode>
+        <ShipCountry>USA</ShipCountry>
+      </ShipInfo>
+    </Order>
+    <Order>
+      <CustomerID>ALPHB</CustomerID>
+      <EmployeeID>2</EmployeeID>
+      <OrderDate>2023-02-01T14:30:00</OrderDate>
+      <RequiredDate>2023-02-15T14:30:00</RequiredDate>
+      <ShipInfo ShippedDate="2023-02-05T14:30:00">
+        <ShipVia>3</ShipVia>
+        <Freight>8.75</Freight>
+        <ShipName>Alpha Bravo Grocers</ShipName>
+        <ShipAddress>123 Maple Street</ShipAddress>
+        <ShipCity>Springfield</ShipCity>
+        <ShipRegion>IL</ShipRegion>
+        <ShipPostalCode>62704</ShipPostalCode>
+        <ShipCountry>USA</ShipCountry>
+      </ShipInfo>
+    </Order>
+    <Order>
+      <CustomerID>ALPHB</CustomerID>
+      <EmployeeID>5</EmployeeID>
+      <OrderDate>2023-03-10T09:00:00</OrderDate>
+      <RequiredDate>2023-03-24T09:00:00</RequiredDate>
+      <ShipInfo ShippedDate="2023-03-12T09:00:00">
+        <ShipVia>2</ShipVia>
+        <Freight>42.10</Freight>
+        <ShipName>Alpha Bravo Grocers</ShipName>
+        <ShipAddress>123 Maple Street</ShipAddress>
+        <ShipCity>Springfield</ShipCity>
+        <ShipRegion>IL</ShipRegion>
+        <ShipPostalCode>62704</ShipPostalCode>
+        <ShipCountry>USA</ShipCountry>
+      </ShipInfo>
+    </Order>
+    <Order>
+      <CustomerID>BETAC</CustomerID>
+      <EmployeeID>9</EmployeeID>
+      <OrderDate>2023-04-05T11:45:00</OrderDate>
+      <RequiredDate>2023-04-19T11:45:00</RequiredDate>
+      <ShipInfo ShippedDate="2023-04-08T11:45:00">
+        <ShipVia>1</ShipVia>
+        <Freight>120.50</Freight>
+        <ShipName>Beta Cargo Solutions</ShipName>
+        <ShipAddress>45 Warehouse Road</ShipAddress>
+        <ShipCity>Portsmouth</ShipCity>
+        <ShipRegion>NH</ShipRegion>
+        <ShipPostalCode>03801</ShipPostalCode>
+        <ShipCountry>USA</ShipCountry>
+      </ShipInfo>
+    </Order>
+    <Order>
+      <CustomerID>BETAC</CustomerID>
+      <EmployeeID>1</EmployeeID>
+      <OrderDate>2023-05-20T16:00:00</OrderDate>
+      <RequiredDate>2023-06-03T16:00:00</RequiredDate>
+      <ShipInfo ShippedDate="2023-05-22T16:00:00">
+        <ShipVia>3</ShipVia>
+        <Freight>78.99</Freight>
+        <ShipName>Beta Cargo Solutions</ShipName>
+        <ShipAddress>45 Warehouse Road</ShipAddress>
+        <ShipCity>Portsmouth</ShipCity>
+        <ShipRegion>NH</ShipRegion>
+        <ShipPostalCode>03801</ShipPostalCode>
+        <ShipCountry>USA</ShipCountry>
+      </ShipInfo>
+    </Order>
+    <Order>
+      <CustomerID>GAMMD</CustomerID>
+      <EmployeeID>6</EmployeeID>
+      <OrderDate>2023-06-01T08:30:00</OrderDate>
+      <RequiredDate>2023-06-15T08:30:00</RequiredDate>
+      <ShipInfo ShippedDate="2023-06-03T08:30:00">
+        <ShipVia>2</ShipVia>
+        <Freight>5.60</Freight>
+        <ShipName>Gamma Distribution Ltd.</ShipName>
+        <ShipAddress>789 High Street</ShipAddress>
+        <ShipCity>London</ShipCity>
+        <ShipRegion>ENG</ShipRegion>
+        <ShipPostalCode>SW1A 0AA</ShipPostalCode>
+        <ShipCountry>UK</ShipCountry>
+      </ShipInfo>
+    </Order>
+    <Order>
+      <CustomerID>GAMMD</CustomerID>
+      <EmployeeID>4</EmployeeID>
+      <OrderDate>2023-07-10T13:00:00</OrderDate>
+      <RequiredDate>2023-07-24T13:00:00</RequiredDate>
+      <ShipInfo ShippedDate="2023-07-15T13:00:00">
+        <ShipVia>1</ShipVia>
+        <Freight>300.00</Freight>
+        <ShipName>Gamma Distribution Ltd.</ShipName>
+        <ShipAddress>789 High Street</ShipAddress>
+        <ShipCity>London</ShipCity>
+        <ShipRegion>ENG</ShipRegion>
+        <ShipPostalCode>SW1A 0AA</ShipPostalCode>
+        <ShipCountry>UK</ShipCountry>
+      </ShipInfo>
+    </Order>
+    <Order>
+      <CustomerID>DELTE</CustomerID>
+      <EmployeeID>10</EmployeeID>
+      <OrderDate>2023-08-01T09:15:00</OrderDate>
+      <RequiredDate>2023-08-15T09:15:00</RequiredDate>
+      <ShipInfo ShippedDate="2023-08-02T09:15:00">
+        <ShipVia>3</ShipVia>
+        <Freight>25.00</Freight>
+        <ShipName>Delta Tech Innovations</ShipName>
+        <ShipAddress>101 Innovation Drive</ShipAddress>
+        <ShipCity>Silicon Valley</ShipCity>
+        <ShipRegion>CA</ShipRegion>
+        <ShipPostalCode>95054</ShipPostalCode>
+        <ShipCountry>USA</ShipCountry>
+      </ShipInfo>
+    </Order>
+  </Orders>
+</Root>

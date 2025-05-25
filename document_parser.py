@@ -1,8 +1,9 @@
 import os
 import re
 import nltk
-import pandas as pd
+import xml.etree.ElementTree as ET
 from nltk.tokenize import sent_tokenize
+from PyPDF2 import PdfReader
 
 # Download required NLTK data if not already present
 required_nltk_data = ['punkt', 'punkt_tab']
@@ -28,49 +29,114 @@ class DocumentParser:
             return None
 
     def parse_csv_file(self, file_path):
-        """
-        Reads a CSV file and returns a list of text content from specified columns.
-        Tries to automatically detect text columns suitable for vectorization.
-        """
+        """Reads a CSV file and returns its raw content as text."""
         try:
-            # Read CSV file
-            df = pd.read_csv(file_path)
-            
-            # Identify text columns (columns with string/object dtype and reasonable text length)
-            text_columns = []
-            for col in df.columns:
-                if df[col].dtype == 'object':  # String type in pandas
-                    # Check if column contains text (sample first non-null value)
-                    sample = df[col].dropna().iloc[0] if not df[col].dropna().empty else ""
-                    if isinstance(sample, str) and len(sample.split()) > 3:  # More than 3 words
-                        text_columns.append(col)
-            
-            if not text_columns:
-                print(f"Warning: No suitable text columns found in {file_path}")
-                return None
-
-            print(f"Processing text columns in CSV: {', '.join(text_columns)}")
-            
-            # Combine text from all text columns
-            texts = []
-            for _, row in df.iterrows():
-                row_texts = []
-                for col in text_columns:
-                    if pd.notna(row[col]) and isinstance(row[col], str):
-                        row_texts.append(str(row[col]))
-                if row_texts:
-                    texts.append(" ".join(row_texts))
-            
-            return "\n".join(texts)
+            with open(file_path, "r", encoding="utf-8") as f:
+                content = f.read()
+            return content
         except Exception as e:
             print(f"Error reading CSV {file_path}: {e}")
+            return None
+
+    def parse_xml_file(self, file_path):
+        """Reads an XML file and returns its raw content as text."""
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                content = f.read()
+            return content
+        except Exception as e:
+            print(f"Error reading XML {file_path}: {e}")
+            return None
+
+    def parse_pdf_file(self, file_path):
+        """Reads a PDF file and extracts all available text content."""
+        try:
+            # Create PDF reader object
+            reader = PdfReader(file_path)
+            
+            # Extract text from all pages
+            text_content = []
+            for page in reader.pages:
+                text = page.extract_text()
+                if text:
+                    text_content.append(text.strip())
+            
+            # Join all text with newlines
+            content = "\n".join(text_content)
+            
+            if not content.strip():
+                print(f"Warning: No text content found in PDF file {file_path}")
+                return None
+                
+            print(f"Extracted {len(text_content)} pages of text from PDF")
+            return content
+            
+        except Exception as e:
+            print(f"Error reading PDF {file_path}: {e}")
             return None
 
     def get_sentences(self, text):
         """Breaks a given text into sentences."""
         if not text:
             return []
-        # Basic cleanup: remove extra newlines, multiple spaces
+            
+        # Check if this is XML content
+        if text.strip().startswith('<?xml'):
+            # Split on closing tags and remove XML-specific content
+            sentences = []
+            # Remove XML declaration
+            text = re.sub(r'<\?xml[^>]+\?>', '', text)
+            # Remove namespace declarations
+            text = re.sub(r'\sxmlns="[^"]+"', '', text)
+            
+            # Extract customer information
+            customer_matches = re.finditer(r'<Customer[^>]*>.*?</Customer>', text, re.DOTALL)
+            for match in customer_matches:
+                customer_xml = match.group(0)
+                company = re.search(r'<CompanyName>([^<]+)</CompanyName>', customer_xml)
+                contact = re.search(r'<ContactName>([^<]+)</ContactName>', customer_xml)
+                title = re.search(r'<ContactTitle>([^<]+)</ContactTitle>', customer_xml)
+                if company:
+                    customer_info = [f"Customer {company.group(1)}"]
+                    if contact:
+                        customer_info.append(f"contact person is {contact.group(1)}")
+                    if title:
+                        customer_info.append(f"who is {title.group(1)}")
+                    sentences.append(" ".join(customer_info))
+            
+            # Extract order information
+            order_matches = re.finditer(r'<Order>.*?</Order>', text, re.DOTALL)
+            for match in order_matches:
+                order_xml = match.group(0)
+                customer_id = re.search(r'<CustomerID>([^<]+)</CustomerID>', order_xml)
+                order_date = re.search(r'<OrderDate>([^<]+)</OrderDate>', order_xml)
+                ship_date = re.search(r'ShippedDate="([^"]+)"', order_xml)
+                freight = re.search(r'<Freight>([^<]+)</Freight>', order_xml)
+                ship_address = re.search(r'<ShipAddress>([^<]+)</ShipAddress>', order_xml)
+                ship_city = re.search(r'<ShipCity>([^<]+)</ShipCity>', order_xml)
+                
+                if customer_id:
+                    # Find company name for this customer ID
+                    company_match = re.search(
+                        f'<Customer CustomerID="{customer_id.group(1)}"[^>]*>.*?<CompanyName>([^<]+)</CompanyName>',
+                        text,
+                        re.DOTALL
+                    )
+                    if company_match:
+                        order_info = [f"{company_match.group(1)} placed an order"]
+                        if order_date:
+                            order_info.append(f"on {order_date.group(1).split('T')[0]}")
+                        if ship_date:
+                            order_info.append(f"which was shipped on {ship_date.group(1).split('T')[0]}")
+                        if freight:
+                            order_info.append(f"with shipping cost of ${freight.group(1)}")
+                        if ship_address and ship_city:
+                            order_info.append(f"to {ship_address.group(1)}, {ship_city.group(1)}")
+                        sentences.append(" ".join(order_info))
+            
+            return sentences
+            
+        # For non-XML content, use regular sentence tokenization
         text = re.sub(r"\n+", " ", text)
         text = re.sub(r"\s+", " ", text).strip()
         sentences = sent_tokenize(text)
@@ -78,8 +144,8 @@ class DocumentParser:
 
     def scan_folder(self, folder_path):
         """
-        Scans a folder for .txt and .csv files, parses them, and returns
-        a list of (file_path, sentence) tuples.
+        Scans a folder for supported files (.txt, .csv, .xml, .pdf),
+        parses them, and returns a list of (file_path, sentence) tuples.
         """
         parsed_data = []
         if not os.path.isdir(folder_path):
@@ -96,6 +162,12 @@ class DocumentParser:
                 elif file_name.endswith(".csv"):
                     print(f"Processing CSV file: {file_path}")
                     content = self.parse_csv_file(file_path)
+                elif file_name.endswith(".xml"):
+                    print(f"Processing XML file: {file_path}")
+                    content = self.parse_xml_file(file_path)
+                elif file_name.endswith(".pdf"):
+                    print(f"Processing PDF file: {file_path}")
+                    content = self.parse_pdf_file(file_path)
                 else:
                     continue
 
