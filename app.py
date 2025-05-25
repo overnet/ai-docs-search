@@ -3,6 +3,7 @@ import sys
 from document_parser import DocumentParser
 from embedding_model import EmbeddingModel
 from vector_db import VectorDB
+from tqdm import tqdm
 
 # --- Configuration ---
 DB_FILE = "document_embeddings.db"
@@ -28,25 +29,26 @@ def initialize_database(db_manager, parser, embedder, folder_path):
         print("No .txt files found or processed in the folder.")
         return
 
-    print(f"Found {len(scanned_data)} sentences to process.")
+    print(f"\nProcessing {len(scanned_data)} sentences...")
 
     # Process in batches for efficiency (optional, but good practice)
     batch_size = 32  # Adjust based on your system's memory and model
+    progress_bar = tqdm(total=len(scanned_data), desc="Vectorizing sentences", unit="sent")
+    
     for i in range(0, len(scanned_data), batch_size):
         batch = scanned_data[i : i + batch_size]
         sentences = [item[1] for item in batch]
         file_paths = [item[0] for item in batch]
 
-        print(
-            f"Processing batch {i // batch_size + 1}/{(len(scanned_data) + batch_size - 1) // batch_size}..."
-        )
         embeddings = embedder.get_batch_embeddings(sentences)
 
         for j in range(len(sentences)):
             db_manager.insert_sentence_embedding(
                 file_paths[j], sentences[j], embeddings[j]
             )
-
+        progress_bar.update(len(batch))
+    
+    progress_bar.close()
     print("\nDatabase initialization complete.")
 
 

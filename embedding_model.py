@@ -3,6 +3,7 @@ import torch
 from sentence_transformers import (
     SentenceTransformer,
 )  # Often used for convenient sentence embeddings
+from tqdm import tqdm
 
 
 class EmbeddingModel:
@@ -13,10 +14,11 @@ class EmbeddingModel:
         """
         self.model_name = model_name
         # Using SentenceTransformer for ease of use. It wraps Hugging Face models.
+        print(f"\nLoading embedding model '{model_name}'...")
         self.model = SentenceTransformer(model_name)
         self.embedding_dimension = self.model.get_sentence_embedding_dimension()
         print(
-            f"Embedding model '{model_name}' loaded. Dimension: {self.embedding_dimension}"
+            f"Model loaded. Embedding dimension: {self.embedding_dimension}"
         )
 
     def get_embedding_dimension(self):
@@ -35,7 +37,8 @@ class EmbeddingModel:
         """Generates embeddings for a list of sentences in a batch."""
         if not sentences:
             return []
-        embeddings = self.model.encode(sentences, convert_to_tensor=True)
+        # Show progress bar for embedding generation
+        embeddings = self.model.encode(sentences, convert_to_tensor=True, show_progress_bar=True)
         return embeddings.tolist()  # Return as a list of lists
 
 

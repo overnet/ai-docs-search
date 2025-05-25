@@ -1,6 +1,7 @@
 import os
 import re
 import nltk
+import pandas as pd
 from nltk.tokenize import sent_tokenize
 
 # Download required NLTK data if not already present
@@ -26,6 +27,45 @@ class DocumentParser:
             print(f"Error reading {file_path}: {e}")
             return None
 
+    def parse_csv_file(self, file_path):
+        """
+        Reads a CSV file and returns a list of text content from specified columns.
+        Tries to automatically detect text columns suitable for vectorization.
+        """
+        try:
+            # Read CSV file
+            df = pd.read_csv(file_path)
+            
+            # Identify text columns (columns with string/object dtype and reasonable text length)
+            text_columns = []
+            for col in df.columns:
+                if df[col].dtype == 'object':  # String type in pandas
+                    # Check if column contains text (sample first non-null value)
+                    sample = df[col].dropna().iloc[0] if not df[col].dropna().empty else ""
+                    if isinstance(sample, str) and len(sample.split()) > 3:  # More than 3 words
+                        text_columns.append(col)
+            
+            if not text_columns:
+                print(f"Warning: No suitable text columns found in {file_path}")
+                return None
+
+            print(f"Processing text columns in CSV: {', '.join(text_columns)}")
+            
+            # Combine text from all text columns
+            texts = []
+            for _, row in df.iterrows():
+                row_texts = []
+                for col in text_columns:
+                    if pd.notna(row[col]) and isinstance(row[col], str):
+                        row_texts.append(str(row[col]))
+                if row_texts:
+                    texts.append(" ".join(row_texts))
+            
+            return "\n".join(texts)
+        except Exception as e:
+            print(f"Error reading CSV {file_path}: {e}")
+            return None
+
     def get_sentences(self, text):
         """Breaks a given text into sentences."""
         if not text:
@@ -38,7 +78,7 @@ class DocumentParser:
 
     def scan_folder(self, folder_path):
         """
-        Scans a folder for .txt files, parses them, and returns
+        Scans a folder for .txt and .csv files, parses them, and returns
         a list of (file_path, sentence) tuples.
         """
         parsed_data = []
@@ -48,16 +88,24 @@ class DocumentParser:
 
         for root, _, files in os.walk(folder_path):
             for file_name in files:
+                file_path = os.path.join(root, file_name)
+                
                 if file_name.endswith(".txt"):
-                    file_path = os.path.join(root, file_name)
-                    print(f"Processing file: {file_path}")
+                    print(f"Processing TXT file: {file_path}")
                     content = self.parse_txt_file(file_path)
-                    if content:
-                        sentences = self.get_sentences(content)
-                        for sentence in sentences:
-                            # Filter out very short or empty sentences that might be noise
-                            if len(sentence.strip()) > 10:
-                                parsed_data.append((file_path, sentence.strip()))
+                elif file_name.endswith(".csv"):
+                    print(f"Processing CSV file: {file_path}")
+                    content = self.parse_csv_file(file_path)
+                else:
+                    continue
+
+                if content:
+                    sentences = self.get_sentences(content)
+                    for sentence in sentences:
+                        # Filter out very short or empty sentences that might be noise
+                        if len(sentence.strip()) > 10:
+                            parsed_data.append((file_path, sentence.strip()))
+        
         return parsed_data
 
 
