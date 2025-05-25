@@ -1,7 +1,6 @@
 import os
 import re
 import nltk
-import xml.etree.ElementTree as ET
 from nltk.tokenize import sent_tokenize
 from PyPDF2 import PdfReader
 from config import Config
@@ -19,61 +18,61 @@ class DocumentParser:
     def __init__(self):
         pass
 
-    def parse_txt_file(self, file_path):
-        """Reads a .txt file and returns its content."""
+    def parse_file(self, file_path):
+        """Reads any supported file and returns its content as text."""
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
-                content = f.read()
-            return content
+            # Handle PDF files differently
+            if file_path.lower().endswith('.pdf'):
+                reader = PdfReader(file_path)
+                # Extract text from all pages
+                text_content = []
+                for page in reader.pages:
+                    text = page.extract_text()
+                    if text:
+                        text_content.append(text.strip())
+                content = "\n".join(text_content)
+                if not content.strip():
+                    print(f"Warning: No text content found in PDF file {file_path}")
+                    return None
+                print(f"Extracted {len(text_content)} pages of text from PDF")
+                return content
+            else:
+                # For CSV and XML files, try different encodings
+                encodings = ['utf-8', 'latin-1', 'iso-8859-1', 'cp1252']
+                file_ext = os.path.splitext(file_path)[1].lower()
+                
+                for encoding in encodings:
+                    try:
+                        with open(file_path, "r", encoding=encoding) as f:
+                            content = f.read()
+                            
+                            # Basic validation for XML files
+                            if file_ext == '.xml':
+                                if not content.strip().startswith('<?xml') and not content.strip().startswith('<'):
+                                    print(f"Warning: File {file_path} doesn't appear to be valid XML")
+                                    continue
+                            
+                            # Basic validation for CSV files
+                            elif file_ext == '.csv':
+                                # Check if it has some basic CSV structure (commas or semicolons)
+                                if ',' not in content and ';' not in content:
+                                    print(f"Warning: File {file_path} doesn't appear to be valid CSV")
+                                    continue
+                            
+                            print(f"Successfully read file with {encoding} encoding")
+                            return content
+                    except UnicodeDecodeError:
+                        if encoding == encodings[-1]:  # Last encoding attempt
+                            print(f"Error: Could not decode {file_path} with any supported encoding")
+                            return None
+                        continue
+                    except Exception as e:
+                        print(f"Error reading {file_path}: {e}")
+                        return None
+                        
+                return None
         except Exception as e:
             print(f"Error reading {file_path}: {e}")
-            return None
-
-    def parse_csv_file(self, file_path):
-        """Reads a CSV file and returns its raw content as text."""
-        try:
-            with open(file_path, "r", encoding="utf-8") as f:
-                content = f.read()
-            return content
-        except Exception as e:
-            print(f"Error reading CSV {file_path}: {e}")
-            return None
-
-    def parse_xml_file(self, file_path):
-        """Reads an XML file and returns its raw content as text."""
-        try:
-            with open(file_path, "r", encoding="utf-8") as f:
-                content = f.read()
-            return content
-        except Exception as e:
-            print(f"Error reading XML {file_path}: {e}")
-            return None
-
-    def parse_pdf_file(self, file_path):
-        """Reads a PDF file and extracts all available text content."""
-        try:
-            # Create PDF reader object
-            reader = PdfReader(file_path)
-            
-            # Extract text from all pages
-            text_content = []
-            for page in reader.pages:
-                text = page.extract_text()
-                if text:
-                    text_content.append(text.strip())
-            
-            # Join all text with newlines
-            content = "\n".join(text_content)
-            
-            if not content.strip():
-                print(f"Warning: No text content found in PDF file {file_path}")
-                return None
-                
-            print(f"Extracted {len(text_content)} pages of text from PDF")
-            return content
-            
-        except Exception as e:
-            print(f"Error reading PDF {file_path}: {e}")
             return None
 
     def get_sentences(self, text):
@@ -81,72 +80,18 @@ class DocumentParser:
         if not text:
             return []
             
-        # Check if this is XML content
-        if text.strip().startswith('<?xml'):
-            # Split on closing tags and remove XML-specific content
-            sentences = []
-            # Remove XML declaration
-            text = re.sub(r'<\?xml[^>]+\?>', '', text)
-            # Remove namespace declarations
-            text = re.sub(r'\sxmlns="[^"]+"', '', text)
-            
-            # Extract customer information
-            customer_matches = re.finditer(r'<Customer[^>]*>.*?</Customer>', text, re.DOTALL)
-            for match in customer_matches:
-                customer_xml = match.group(0)
-                company = re.search(r'<CompanyName>([^<]+)</CompanyName>', customer_xml)
-                contact = re.search(r'<ContactName>([^<]+)</ContactName>', customer_xml)
-                title = re.search(r'<ContactTitle>([^<]+)</ContactTitle>', customer_xml)
-                if company:
-                    customer_info = [f"Customer {company.group(1)}"]
-                    if contact:
-                        customer_info.append(f"contact person is {contact.group(1)}")
-                    if title:
-                        customer_info.append(f"who is {title.group(1)}")
-                    sentences.append(" ".join(customer_info))
-            
-            # Extract order information
-            order_matches = re.finditer(r'<Order>.*?</Order>', text, re.DOTALL)
-            for match in order_matches:
-                order_xml = match.group(0)
-                customer_id = re.search(r'<CustomerID>([^<]+)</CustomerID>', order_xml)
-                order_date = re.search(r'<OrderDate>([^<]+)</OrderDate>', order_xml)
-                ship_date = re.search(r'ShippedDate="([^"]+)"', order_xml)
-                freight = re.search(r'<Freight>([^<]+)</Freight>', order_xml)
-                ship_address = re.search(r'<ShipAddress>([^<]+)</ShipAddress>', order_xml)
-                ship_city = re.search(r'<ShipCity>([^<]+)</ShipCity>', order_xml)
-                
-                if customer_id:
-                    # Find company name for this customer ID
-                    company_match = re.search(
-                        f'<Customer CustomerID="{customer_id.group(1)}"[^>]*>.*?<CompanyName>([^<]+)</CompanyName>',
-                        text,
-                        re.DOTALL
-                    )
-                    if company_match:
-                        order_info = [f"{company_match.group(1)} placed an order"]
-                        if order_date:
-                            order_info.append(f"on {order_date.group(1).split('T')[0]}")
-                        if ship_date:
-                            order_info.append(f"which was shipped on {ship_date.group(1).split('T')[0]}")
-                        if freight:
-                            order_info.append(f"with shipping cost of ${freight.group(1)}")
-                        if ship_address and ship_city:
-                            order_info.append(f"to {ship_address.group(1)}, {ship_city.group(1)}")
-                        sentences.append(" ".join(order_info))
-            
-            return sentences
-            
-        # For non-XML content, use regular sentence tokenization
-        text = re.sub(r"\n+", " ", text)
-        text = re.sub(r"\s+", " ", text).strip()
+        # Clean up the text
+        text = re.sub(r"\n+", " ", text)  # Replace newlines with spaces
+        text = re.sub(r"\s+", " ", text).strip()  # Normalize whitespace
+        
+        # Break into sentences
         sentences = sent_tokenize(text)
         return sentences
 
     def scan_folder(self, folder_path):
         """
-        Scans a folder for supported files (.txt, .csv, .xml, .pdf),
-        parses them, and returns a list of (file_path, sentence) tuples.
+        Scans a folder for supported files,
+        reads them as text, and returns a list of (file_path, sentence) tuples.
         """
         parsed_data = []
         if not os.path.isdir(folder_path):
@@ -162,16 +107,7 @@ class DocumentParser:
                     continue
                 
                 print(f"Processing {file_ext[1:].upper()} file: {file_path}")
-                content = None
-                
-                if file_ext == '.txt':
-                    content = self.parse_txt_file(file_path)
-                elif file_ext == '.csv':
-                    content = self.parse_csv_file(file_path)
-                elif file_ext == '.xml':
-                    content = self.parse_xml_file(file_path)
-                elif file_ext == '.pdf':
-                    content = self.parse_pdf_file(file_path)
+                content = self.parse_file(file_path)
 
                 if content:
                     sentences = self.get_sentences(content)
