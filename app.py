@@ -4,18 +4,32 @@ from document_parser import DocumentParser
 from embedding_model import EmbeddingModel
 from vector_db import VectorDB
 from tqdm import tqdm
+import argparse
 
 # --- Configuration ---
-DB_FILE = "document_embeddings.db"
-# IMPORTANT: Set this to the actual path of your sqlite-vss extension file
-# Download from https://github.com/asg017/sqlite-vss/releases
-# Example for Linux: VSS_EXTENSION_PATH = "/usr/local/lib/sqlite_vss0.so"
-# Example for macOS: VSS_EXTENSION_PATH = "/usr/local/lib/sqlite_vss0.dylib"
-# Example for Windows: VSS_EXTENSION_PATH = "C:\\path\\to\\sqlite_vss0.dll"
-# If you don't provide a valid path, it will fall back to Python-based search (slower).
-VSS_EXTENSION_PATH = None  # <--- !!! REPLACE WITH YOUR ACTUAL PATH !!!
+DB_FILE = os.path.join("data", "db", "document_embeddings.db")
+VSS_EXTENSION_PATH = os.getenv("VSS_EXTENSION_PATH")
+HOST_ROOT = os.getenv("HOST_ROOT", "/host")  # Root of host filesystem in container
 # --- End Configuration ---
 
+def convert_host_path_to_container(host_path):
+    """Convert a host path to its equivalent in the container."""
+    # If it's a relative path, make it absolute relative to current directory
+    if not os.path.isabs(host_path):
+        host_path = os.path.abspath(host_path)
+    
+    # If it's already an absolute path in the container, return as is
+    if host_path.startswith(HOST_ROOT):
+        return host_path
+    
+    # Convert host absolute path to container path
+    return os.path.join(HOST_ROOT, host_path.lstrip('/'))
+
+def convert_container_path_to_host(container_path):
+    """Convert a container path back to host path for display."""
+    if container_path.startswith(HOST_ROOT):
+        return '/' + container_path[len(HOST_ROOT):].lstrip('/')
+    return container_path
 
 def initialize_database(db_manager, parser, embedder, folder_path):
     """
@@ -26,19 +40,20 @@ def initialize_database(db_manager, parser, embedder, folder_path):
 
     scanned_data = parser.scan_folder(folder_path)
     if not scanned_data:
-        print("No .txt files found or processed in the folder.")
+        print("No files found or processed in the folder.")
         return
 
     print(f"\nProcessing {len(scanned_data)} sentences...")
 
-    # Process in batches for efficiency (optional, but good practice)
-    batch_size = 32  # Adjust based on your system's memory and model
+    # Process in batches for efficiency
+    batch_size = 32
     progress_bar = tqdm(total=len(scanned_data), desc="Vectorizing sentences", unit="sent")
     
     for i in range(0, len(scanned_data), batch_size):
         batch = scanned_data[i : i + batch_size]
         sentences = [item[1] for item in batch]
-        file_paths = [item[0] for item in batch]
+        # Convert container paths back to host paths for storage
+        file_paths = [convert_container_path_to_host(item[0]) for item in batch]
 
         embeddings = embedder.get_batch_embeddings(sentences)
 
@@ -55,8 +70,11 @@ def initialize_database(db_manager, parser, embedder, folder_path):
 def main():
     print("--- AI Document Search Application ---")
 
+    # Create necessary directories
+    os.makedirs(os.path.dirname(DB_FILE), exist_ok=True)
+
     # Initialize components
-    parser = DocumentParser()
+    doc_parser = DocumentParser()
     embedder = EmbeddingModel()
     db_manager = VectorDB(
         db_path=DB_FILE,
@@ -64,21 +82,42 @@ def main():
         sqlite_vss_extension_path=VSS_EXTENSION_PATH,
     )
 
-    # --- Step 1: Ingest Data ---
-    folder_path = input("Enter the folder path to scan for .txt files: ")
+    # Get folder path from user input
+    print("\nEnter the folder path to scan for files.")
+    print("You can use:")
+    print("- Absolute path (e.g., /home/user/documents)")
+    print("- Relative path (e.g., test_docs or ./test_docs)")
+    folder_path = input("Folder path: ").strip()
+    
+    # Handle relative paths
+    if not os.path.isabs(folder_path):
+        # Convert relative path to absolute path in the container
+        folder_path = os.path.join("/app", folder_path)
+    else:
+        # Convert absolute host path to container path
+        folder_path = convert_host_path_to_container(folder_path)
+    
+    print(f"\nScanning folder: {folder_path}")
+    
     if not os.path.isdir(folder_path):
-        print(f"Error: Folder '{folder_path}' does not exist.")
+        print(f"Error: Folder '{folder_path}' does not exist or is not accessible.")
         db_manager.close()
         sys.exit(1)
 
-    initialize_database(db_manager, parser, embedder, folder_path)
+    initialize_database(db_manager, doc_parser, embedder, folder_path)
 
-    # --- Step 2: Perform Searches ---
+    # --- Perform Searches ---
     while True:
-        query = input(
-            "\nEnter your search query (e.g., 'animal description', or 'q' to quit): "
-        )
-        if query.lower() == "q":
+        try:
+            query = input("\nEnter your search query (or 'q' to quit): ")
+        except (EOFError, KeyboardInterrupt):
+            break
+            
+        if not query:
+            continue
+            
+        query = query.lower()
+        if query in ('q', 'quit', 'exit'):
             break
 
         print(f"Searching for content related to: '{query}'")
@@ -89,21 +128,20 @@ def main():
 
         search_results = db_manager.search_similar_sentences(
             query_embedding, limit=5
-        )  # Get top 5 sentences
+        )
 
         if not search_results:
             print("No relevant files found.")
         else:
             print("\n--- Top Relevant Files ---")
-            # Collect unique file paths
             relevant_files = set()
             for res in search_results:
-                relevant_files.add(res["file_path"])
+                # Display host paths to the user
+                relevant_files.add(res["file_path"])  # Already in host path format
 
             for f_path in relevant_files:
                 print(f"- {f_path}")
 
-            # Optionally, show the top matching sentences
             print("\n--- Top Matching Sentences ---")
             for res in search_results:
                 print(
