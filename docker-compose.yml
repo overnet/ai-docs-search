@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  ai-docs-search:
+    build: .
+    volumes:
+      - /:/host:ro  # Mount entire host filesystem as read-only
+      - ./data/db:/app/data/db  # Mount database directory for persistence
+      - .:/app  # Mount current directory as /app
+    environment:
+      - VSS_EXTENSION_PATH=/usr/local/lib/sqlite_vss0.so
+      - HOST_ROOT=/host  # Reference point for the host filesystem
+    command: ["python", "app.py"]  # Remove the fixed folder path
+    stdin_open: true
+    tty: true        # Allocate a pseudo-TTY 
