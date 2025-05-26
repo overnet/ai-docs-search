@@ -1,6 +1,6 @@
 # AI Document Semantic Search
 
-A powerful, local semantic search engine that helps you find relevant content across your documents using natural language queries. The application uses advanced AI to understand the meaning of your documents and queries, going beyond simple keyword matching.
+A powerful, AI-driven semantic search engine that helps you find relevant content across your documents using natural language queries. The application leverages advanced AI models and machine learning to understand the meaning of your documents and queries, going far beyond simple keyword matching to deliver intelligent, context-aware search results.
 
 ## Project Structure
 
@@ -38,25 +38,26 @@ ai-docs-search/
   - XML files (.xml)
   - PDF files (.pdf)
 
-- **Semantic Search**: Find documents based on meaning, not just keywords
-- **Vector Similarity Search**: Uses Python-based similarity calculation for accurate results
+- **AI-Powered Semantic Search**: Find documents based on meaning and context using advanced AI models, not just keywords
+- **Machine Learning Vector Search**: Uses AI-generated embeddings and Python-based similarity calculation for intelligent results
+- **Natural Language Understanding**: AI processes your queries to understand intent and context
 - **Progress Tracking**: Visual progress bars for document processing
 - **Docker Support**: Easy deployment using Docker
 
 ## How It Works
 
-1. **Document Processing**:
+1. **AI-Powered Document Processing**:
    - Scans your specified folder for supported files
    - Extracts text content from each file
-   - Breaks content into meaningful sentences
-   - Generates embeddings using the all-MiniLM-L6-v2 model
-   - Stores results in a SQLite database
+   - Breaks content into meaningful sentences using AI-powered text processing
+   - Generates high-dimensional vector embeddings using the all-MiniLM-L6-v2 AI model
+   - Stores AI-generated embeddings in a SQLite database
 
-2. **Search**:
+2. **Intelligent AI Search**:
    - Takes your natural language query
-   - Converts it to the same embedding space
-   - Finds semantically similar content
-   - Returns relevant files and matching sentences
+   - Uses AI to convert it to the same high-dimensional embedding space
+   - Employs machine learning algorithms to find semantically similar content
+   - Returns AI-ranked relevant files and matching sentences based on semantic similarity
 
 ## Technologies Used
 
@@ -95,10 +96,11 @@ The model converts text into high-dimensional vectors where:
 - Different meanings are far apart
 - Relationships between concepts are preserved
 
-This allows the application to:
-1. Find relevant content even when exact words don't match
-2. Understand context and meaning, not just keywords
-3. Handle variations in language and phrasing
+This AI-powered approach allows the application to:
+1. Find relevant content even when exact words don't match using machine learning
+2. Understand context and meaning through AI, not just keywords
+3. Handle variations in language and phrasing with intelligent natural language processing
+4. Provide human-like understanding of document content and search intent
 
 ## Installation
 
@@ -173,9 +175,9 @@ Here's a complete example of using the application:
 ```
 --- AI Document Search Application ---
 
-Loading embedding model 'sentence-transformers/all-MiniLM-L6-v2'...
-Model loaded. Embedding dimension: 384
-Using optimized Python-based similarity search for vector operations.
+Loading AI embedding model 'sentence-transformers/all-MiniLM-L6-v2'...
+AI Model loaded. Embedding dimension: 384
+Using AI-optimized Python-based similarity search for vector operations.
 
 Enter the folder path to scan for files.
 Folder path: test_docs
@@ -231,19 +233,20 @@ Searching for content related to: 'give me files with products'
 No relevant files found.
 ```
 
-### Understanding the Results
+### Understanding the AI Results
 
-- **Distance Scores**: Lower values indicate better matches (0.0 = perfect match, 1.0 = no similarity)
-- **Semantic Understanding**: The system finds relevant content even when exact keywords don't match
-- **File Types**: Supports TXT, CSV, XML, and PDF files
-- **Multiple Results**: Shows all relevant files and the best matching sentences from each
+- **AI Distance Scores**: Lower values indicate better AI-calculated matches (0.0 = perfect match, 1.0 = no similarity)
+- **AI Semantic Understanding**: The AI system finds relevant content even when exact keywords don't match
+- **File Types**: AI processes TXT, CSV, XML, and PDF files intelligently
+- **AI-Ranked Results**: Shows all relevant files and the best AI-matching sentences from each
 
-### Tips for Better Search Results
+### Tips for Better AI Search Results
 
-- Use descriptive phrases: "files about animals" works better than just "animals"
-- Try different phrasings if you don't get expected results
-- The system understands context and synonyms
-- Distance scores below 0.7 typically indicate good semantic matches
+- Use descriptive phrases: "files about animals" works better than just "animals" for AI understanding
+- Try different phrasings if you don't get expected results - the AI learns from natural language
+- The AI system understands context, synonyms, and related concepts
+- AI distance scores below 0.7 typically indicate good semantic matches
+- Write queries as you would ask a human - the AI understands natural language
 
 ### Test Data
 
@@ -256,18 +259,18 @@ The repository includes sample test files in the `test_docs/` directory:
 - **test_document.pdf** - Sample PDF document
 - **sample_customer_orders.xml** - XML data with customer information
 
-These files are perfect for testing the semantic search capabilities with queries like:
-- "give me files with animals" → finds cats.txt and dogs.txt
-- "give me files with space objects" → finds space.txt and space_objects.csv
-- "show me customer data" → finds sample_customer_orders.xml
+These files are perfect for testing the AI semantic search capabilities with natural language queries like:
+- "give me files with animals" → AI finds cats.txt and dogs.txt
+- "give me files with space objects" → AI finds space.txt and space_objects.csv
+- "show me customer data" → AI finds sample_customer_orders.xml
 
-## Performance Notes
+## AI Performance Notes
 
-- The application uses Python-based similarity calculation with NumPy for accurate vector search
-- Processing speed depends on:
+- The application uses AI-powered Python-based similarity calculation with NumPy for accurate vector search
+- AI processing speed depends on:
   - Number and size of documents
-  - Available system resources
-  - System memory for vector calculations
+  - Available system resources for AI computations
+  - System memory for AI vector calculations and model operations
 
 ## Development
 
