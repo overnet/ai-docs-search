@@ -2,6 +2,34 @@
 
 A powerful, local semantic search engine that helps you find relevant content across your documents using natural language queries. The application uses advanced AI to understand the meaning of your documents and queries, going beyond simple keyword matching.
 
+## Project Structure
+
+```
+ai-docs-search/
+├── src/                    # Python source code
+│   ├── __init__.py
+│   ├── app.py             # Main application entry point
+│   ├── config.py          # Configuration settings
+│   ├── document_parser.py # Document processing and text extraction
+│   ├── embedding_model.py # Text vectorization using transformers
+│   └── vector_db.py       # Database management and vector search
+├── docker/                 # Docker-related files
+│   ├── Dockerfile
+│   ├── docker-compose.yml
+│   └── .dockerignore
+├── docs/                   # Documentation
+│   ├── project_zvit.txt   # Ukrainian project report
+│   ├── project_zvit.pdf   # Ukrainian project report (PDF)
+│   └── project_report.txt # English project report
+├── tests/                  # Test files
+├── test_docs/              # Sample test documents
+├── data/                   # Database and data files
+├── setup.py               # Package configuration
+├── requirements.txt       # Python dependencies
+├── README.md              # This file
+└── .gitignore             # Git ignore rules
+```
+
 ## Features
 
 - **Multiple File Format Support**: Process various file types:
@@ -84,11 +112,11 @@ This allows the application to:
 
 2. Build and run using Docker Compose:
    ```bash
-   # First build the image
-   docker compose build
+   # Build the Docker image
+   docker compose -f docker/docker-compose.yml build
 
-   # Then run the application in interactive mode
-   docker compose run -i ai-docs-search
+   # Run the application in interactive mode
+   docker compose -f docker/docker-compose.yml run -i ai-docs-search
    ```
 
    Note: We use `run -i` instead of `up` to ensure proper handling of interactive input for the search queries.
@@ -114,7 +142,9 @@ This allows the application to:
 
 4. Run the application:
    ```bash
-   python app.py
+   # Set Python path to include src directory
+   export PYTHONPATH=src:$PYTHONPATH
+   python src/app.py
    ```
 
 ## Usage Examples
@@ -161,12 +191,18 @@ This allows the application to:
 
 ## Development
 
-The application consists of four main components:
+The application consists of main components located in the `src/` directory:
 
-1. `app.py`: Main application entry point and orchestration
-2. `document_parser.py`: Document processing and text extraction
-3. `embedding_model.py`: Text vectorization using transformers
-4. `vector_db.py`: Database management and vector search
+1. `src/app.py`: Main application entry point and orchestration
+2. `src/document_parser.py`: Document processing and text extraction
+3. `src/embedding_model.py`: Text vectorization using transformers
+4. `src/vector_db.py`: Database management and vector search
+5. `src/config.py`: Configuration settings and constants
+
+Docker configuration is located in the `docker/` directory:
+- `docker/Dockerfile`: Container build instructions
+- `docker/docker-compose.yml`: Service orchestration
+- `docker/.dockerignore`: Files to exclude from Docker build context
 
 ## Contributing
 

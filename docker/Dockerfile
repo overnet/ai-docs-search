@@ -10,13 +10,13 @@ RUN apt-get update && apt-get install -y \
     libsqlite3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install sqlite-vss
-RUN git clone https://github.com/asg017/sqlite-vss.git \
-    && cd sqlite-vss \
-    && make loadable \
-    && cp dist/debug/vss0.so /usr/local/lib/sqlite_vss0.so \
-    && cd .. \
-    && rm -rf sqlite-vss
+# Install sqlite-vss (temporarily commented out to test structure)
+# RUN git clone https://github.com/asg017/sqlite-vss.git \
+#     && cd sqlite-vss \
+#     && make loadable \
+#     && cp dist/debug/vss0.so /usr/local/lib/sqlite_vss0.so \
+#     && cd .. \
+#     && rm -rf sqlite-vss
 
 # Copy requirements first to leverage Docker cache
 COPY setup.py .
@@ -28,5 +28,8 @@ RUN pip install -e .
 # Copy application code
 COPY . .
 
+# Set Python path to include src directory
+ENV PYTHONPATH=/app/src:$PYTHONPATH
+
 # Command to run the application
-CMD ["python", "app.py"] 
+CMD ["python", "src/app.py"] 
