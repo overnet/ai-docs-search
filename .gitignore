@@ -31,3 +31,10 @@ data/db/
 # Personal files
 .asoundrc
 requirements.txt
+
+# PDF generation scripts (keep locally but don't track)
+convert_to_pdf.py
+create_nice_pdf.py
+
+# Temporary HTML files generated during PDF creation
+docs/*.html

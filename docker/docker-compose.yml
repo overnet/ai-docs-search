@@ -10,7 +10,6 @@ services:
       - ../data/db:/app/data/db  # Mount database directory for persistence
       - ..:/app  # Mount current directory as /app
     environment:
-      - VSS_EXTENSION_PATH=/usr/local/lib/sqlite_vss0.so
       - HOST_ROOT=/host  # Reference point for the host filesystem
       - PYTHONPATH=/app/src:$PYTHONPATH
     command: ["python", "src/app.py"]

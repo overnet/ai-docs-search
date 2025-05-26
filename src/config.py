@@ -9,10 +9,9 @@ class Config:
     
     # Docker environment settings
     HOST_ROOT = os.getenv("HOST_ROOT", "/host")
-    VSS_EXTENSION_PATH = os.getenv("VSS_EXTENSION_PATH")
     
     # Search settings
-    DISTANCE_THRESHOLD = 0.8  # Maximum distance for semantic similarity
+    DISTANCE_THRESHOLD = 0.7  # Maximum distance for semantic similarity (balanced for accuracy and recall)
     DEFAULT_SEARCH_LIMIT = 5  # Default number of results to return
     
     # Document processing settings

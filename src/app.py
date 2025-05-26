@@ -73,7 +73,6 @@ def main():
     db_manager = VectorDB(
         db_path=Config.DB_FILE,
         embedding_dim=embedder.get_embedding_dimension(),
-        sqlite_vss_extension_path=Config.VSS_EXTENSION_PATH,
     )
 
     # Get folder path from user input
@@ -85,11 +84,17 @@ def main():
     
     # Handle relative paths
     if not os.path.isabs(folder_path):
-        # Convert relative path to absolute path in the container
-        folder_path = os.path.join("/app", folder_path)
+        # Check if we're running in Docker (if /app exists) or locally
+        if os.path.exists("/app"):
+            # Running in Docker container
+            folder_path = os.path.join("/app", folder_path)
+        else:
+            # Running locally - use current working directory
+            folder_path = os.path.abspath(folder_path)
     else:
-        # Convert absolute host path to container path
-        folder_path = convert_host_path_to_container(folder_path)
+        # Convert absolute host path to container path only if in Docker
+        if os.path.exists("/app"):
+            folder_path = convert_host_path_to_container(folder_path)
     
     print(f"\nScanning folder: {folder_path}")
     

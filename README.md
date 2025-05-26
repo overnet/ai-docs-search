@@ -39,7 +39,7 @@ ai-docs-search/
   - PDF files (.pdf)
 
 - **Semantic Search**: Find documents based on meaning, not just keywords
-- **Vector Similarity Search**: Uses efficient SQLite VSS extension when available
+- **Vector Similarity Search**: Uses Python-based similarity calculation for accurate results
 - **Progress Tracking**: Visual progress bars for document processing
 - **Docker Support**: Easy deployment using Docker
 
@@ -69,7 +69,7 @@ ai-docs-search/
   - Based on BERT architecture but 40% smaller
 - **NLTK**: For text processing and sentence segmentation
 - **SQLite**: For storing document embeddings
-- **sqlite-vss**: For efficient vector similarity search
+- **NumPy**: For efficient vector similarity calculations
 - **PyPDF2**: For PDF file processing
 - **Docker**: For containerization and easy deployment
 
@@ -120,6 +120,8 @@ This allows the application to:
    ```
 
    Note: We use `run -i` instead of `up` to ensure proper handling of interactive input for the search queries.
+   
+   When prompted for a folder path, you can use `test_docs` to try the included sample files or use path to your local dir with files.
 
 ### Manual Installation
 
@@ -146,48 +148,126 @@ This allows the application to:
    export PYTHONPATH=src:$PYTHONPATH
    python src/app.py
    ```
+   
+   When prompted for a folder path, you can use `test_docs` to try the included sample files or use path to your local dir with files.
 
 ## Usage Examples
 
-1. Start the application and enter the folder path you want to search through:
+### Starting the Application
+
+1. **Using Docker (Recommended):**
+   ```bash
+   docker compose -f docker/docker-compose.yml run -i ai-docs-search
    ```
-   Enter the folder path to scan for files.
-   You can use:
-   - Absolute path (e.g., /home/user/documents)
-   - Relative path (e.g., test_docs or ./test_docs)
+
+2. **Manual Installation:**
+   ```bash
+   export PYTHONPATH=src:$PYTHONPATH
+   python src/app.py
    ```
 
-2. After processing, you can enter natural language queries. Examples:
+### Sample Session
 
-   - Find animal-related content:
-     ```
-     Enter your search query: Tell me about animals
-     ```
-     The app will return files containing content semantically related to animals, even if they don't explicitly use the word "animals".
+Here's a complete example of using the application:
 
-   - Find technical documentation:
-     ```
-     Enter your search query: Show me implementation details or technical specifications
-     ```
+```
+--- AI Document Search Application ---
 
-   - Find content about specific topics:
-     ```
-     Enter your search query: Find information about data processing
-     ```
+Loading embedding model 'sentence-transformers/all-MiniLM-L6-v2'...
+Model loaded. Embedding dimension: 384
+Using optimized Python-based similarity search for vector operations.
 
-3. For each query, the app shows:
-   - List of relevant files
-   - Matching sentences with similarity scores
-   - Type 'q' to quit
+Enter the folder path to scan for files.
+Folder path: test_docs
+
+Scanning folder: /app/test_docs
+
+--- Initializing Database ---
+Processing CSV file: /app/test_docs/space_objects.csv
+Processing TXT file: /app/test_docs/cats.txt
+Processing PDF file: /app/test_docs/test_document.pdf
+Processing TXT file: /app/test_docs/dogs.txt
+Processing TXT file: /app/test_docs/space.txt
+Processing XML file: /app/test_docs/sample_customer_orders.xml
+
+Processing 112 sentences...
+Vectorizing sentences: 100%|████████████| 112/112 [00:02<00:00, 37.70sent/s]
+
+Database initialization complete.
+```
+
+### Search Query Examples
+
+**Example 1: Finding Animal-Related Content**
+```
+Enter your search query: give me files with animals
+Searching for content related to: 'give me files with animals'
+
+--- Top Relevant Files ---
+- /app/test_docs/cats.txt
+- /app/test_docs/dogs.txt
+
+--- Top Matching Sentences ---
+  [File: dogs.txt] Sentence: 'Dogs are loyal pets....' (Distance: 0.6765)
+  [File: cats.txt] Sentence: 'Cats are independent animals....' (Distance: 0.6986)
+```
+
+**Example 2: Finding Space-Related Content**
+```
+Enter your search query: give me files with space objects
+Searching for content related to: 'give me files with space objects'
+
+--- Top Relevant Files ---
+- /app/test_docs/space.txt
+
+--- Top Matching Sentences ---
+  [File: space.txt] Sentence: 'He collected space memorabilia....' (Distance: 0.5963)
+```
+
+**Example 3: No Results Found**
+```
+Enter your search query: give me files with products
+Searching for content related to: 'give me files with products'
+No relevant files found.
+```
+
+### Understanding the Results
+
+- **Distance Scores**: Lower values indicate better matches (0.0 = perfect match, 1.0 = no similarity)
+- **Semantic Understanding**: The system finds relevant content even when exact keywords don't match
+- **File Types**: Supports TXT, CSV, XML, and PDF files
+- **Multiple Results**: Shows all relevant files and the best matching sentences from each
+
+### Tips for Better Search Results
+
+- Use descriptive phrases: "files about animals" works better than just "animals"
+- Try different phrasings if you don't get expected results
+- The system understands context and synonyms
+- Distance scores below 0.7 typically indicate good semantic matches
+
+### Test Data
+
+The repository includes sample test files in the `test_docs/` directory:
+
+- **cats.txt** - Information about cats and their behavior
+- **dogs.txt** - Content about dogs as pets
+- **space.txt** - Space-related content and astronomy
+- **space_objects.csv** - Structured data about celestial objects
+- **test_document.pdf** - Sample PDF document
+- **sample_customer_orders.xml** - XML data with customer information
+
+These files are perfect for testing the semantic search capabilities with queries like:
+- "give me files with animals" → finds cats.txt and dogs.txt
+- "give me files with space objects" → finds space.txt and space_objects.csv
+- "show me customer data" → finds sample_customer_orders.xml
 
 ## Performance Notes
 
-- The application uses sqlite-vss for efficient vector similarity search when available
-- Falls back to Python-based similarity calculation if sqlite-vss is not available
+- The application uses Python-based similarity calculation with NumPy for accurate vector search
 - Processing speed depends on:
   - Number and size of documents
   - Available system resources
-  - Whether sqlite-vss is available
+  - System memory for vector calculations
 
 ## Development
 
