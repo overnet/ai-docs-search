@@ -27,3 +27,7 @@ data/db/
 *.log
 *.swp
 .DS_Store .asoundrc
+
+# Personal files
+.asoundrc
+requirements.txt
